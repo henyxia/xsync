@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use FileHandle;
+use Digest::MD5;
+use Cwd 'abs_path';
+
+my $CONF_OMMITED = 1;
+sub isSyncable
+{
+	return 1;
+}
+
+sub getMD5
+{
+	my $file = shift;
+	my $ctx = Digest::MD5->new;
+	my $fh = FileHandle->new($file, "r");
+	$ctx->addfile($fh);
+	my $digest = $ctx->hexdigest;
+	return $digest;
+}
+
+sub process_files
+{
+	# Getting the path we want to scan
+    my $path = shift;
+
+	# Opening directory
+    opendir (DIR, $path)
+        or die "Unable to open $path: $!";
+
+	# Listing files expect . and ..
+    my @files = grep { !/^\.{1,2}$/ } readdir (DIR);
+
+    # Close the directory.
+    closedir (DIR);
+
+    # Gatting the real link
+    @files = map { $path . '/' . $_ } @files;
+
+	# Listing files
+    for (@files)
+	{
+		# Scanning undergoing directory
+        if (-d $_)
+		{
+            process_files ($_);
+        }
+		else
+		{
+			# Now checking if we want to scan this file
+			if (isSyncable($_))
+			{
+				print "ANALYZING\t".$_."\t".getMD5($_)."\n"
+			}
+			elsif (!isSyncable($_) and $CONF_OMMITED)
+			{
+				print "OMMITED\t$_\n";
+			}
+        }
+    }
+}
+
+my ($currentDir) = @ARGV;
+$currentDir = abs_path($currentDir);
+
+print "Scanning directory $currentDir\n\n";
+
+process_files($currentDir);
