@@ -10,6 +10,17 @@ use Cwd 'abs_path';
 my $CONF_OMMITED = 1;
 sub isSyncable
 {
+	my ($item) = @_;
+	my @omitted = qw(lel1);
+
+	foreach my $omittedItem(@omitted)
+	{
+		if(($omittedItem cmp $item) == 0)
+		{
+			return 0;
+		}
+	}
+
 	return 1;
 }
 
