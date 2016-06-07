@@ -75,9 +75,38 @@ sub process_files
     }
 }
 
+sub read_conf
+{
+	my $folder = shift;
+
+	print "Reading conf for folder $folder\n";
+
+	my $fh;
+	my $i = 1;
+	if(!open($fh, '<', $folder.'/.xsync'))
+	{
+		print STDERR "Uanble to read your configuration file\n";
+		print STDERR "Your datas will not be synced\n";
+		return;
+	}
+
+	while(my $line = <$fh>)
+	{
+		if(my ($param, $data) = $line =~ /(.*) (.*)/)
+		{
+			# Processing
+		}
+		else
+		{
+			print STDERR "Malformed line $i\n";
+		}
+	}
+}
+
 my ($currentDir) = @ARGV;
 $currentDir = abs_path($currentDir || '.');
 
 print "Scanning directory $currentDir\n\n";
 
+read_conf($currentDir);
 process_files($currentDir);
