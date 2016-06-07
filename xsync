@@ -11,11 +11,11 @@ my $CONF_OMMITED = 1;
 sub isSyncable
 {
 	my ($item) = @_;
-	my @omitted = qw(lel1);
+	my @omitted = qw(.git);
 
 	foreach my $omittedItem(@omitted)
 	{
-		if(($omittedItem cmp $item) == 0)
+		if($item =~ $omittedItem)
 		{
 			return 0;
 		}
@@ -76,7 +76,7 @@ sub process_files
 }
 
 my ($currentDir) = @ARGV;
-$currentDir = abs_path($currentDir);
+$currentDir = abs_path($currentDir || '.');
 
 print "Scanning directory $currentDir\n\n";
 
