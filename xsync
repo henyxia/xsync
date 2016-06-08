@@ -7,6 +7,7 @@ use FileHandle;
 use Digest::MD5;
 use Cwd 'abs_path';
 
+my $paramsAuthorized->{CONF_OMITED} = [ qw{ 0 1 } ];
 my $CONF_OMMITED = 1;
 sub isSyncable
 {
@@ -92,9 +93,24 @@ sub read_conf
 
 	while(my $line = <$fh>)
 	{
+		chomp $line;
 		if(my ($param, $data) = $line =~ /(.*) (.*)/)
 		{
-			# Processing
+			if(defined($paramsAuthorized->{$param}))
+			{
+				if($data ~~ $paramsAuthorized->{$param})
+				{
+					# Processing
+				}
+				else
+				{
+					print STDERR "The value $data is not allowed for $param\n";
+				}
+			}
+			else
+			{
+				print STDERR "Parameter $param not recognized\n";
+			}
 		}
 		else
 		{
