@@ -7,8 +7,9 @@ use FileHandle;
 use Digest::MD5;
 use Cwd 'abs_path';
 
-my $paramsAuthorized->{CONF_OMITED} = [ qw{ 0 1 } ];
-my $CONF_OMMITED = 1;
+my $conf->{CONF_OMITED}->authorized = [ qw{ 0 1 } ];
+$conf->{CONF_OMITED}->default = 0;
+
 sub isSyncable
 {
 	my ($item) = @_;
@@ -68,7 +69,7 @@ sub process_files
 			{
 				print "ANALYZING\t".$_."\t".getMD5($_)."\n"
 			}
-			elsif (!isSyncable($_) and $CONF_OMMITED)
+			elsif ($conf->{OMMIT}->value and !isSyncable($_))
 			{
 				print "OMMITED\t$_\n";
 			}
@@ -88,19 +89,27 @@ sub read_conf
 	{
 		print STDERR "Uanble to read your configuration file\n";
 		print STDERR "Your datas will not be synced\n";
-		return;
+		die();
 	}
+
+	foreach my $iteParam keys $conf
+	{
+		print STDERR "Setting $iteParam to default value\n";
+		$conf->{$iteParam}->value = $conf->{$iteParam}->default;
+	}
+
+	# Setting default parameters
 
 	while(my $line = <$fh>)
 	{
 		chomp $line;
 		if(my ($param, $data) = $line =~ /(.*) (.*)/)
 		{
-			if(defined($paramsAuthorized->{$param}))
+			if(defined($conf->{$param}))
 			{
-				if($data ~~ $paramsAuthorized->{$param})
+				if($data ~~ $conf->{$param}->authorized)
 				{
-					# Processing
+					$conf->{$param} = $data;
 				}
 				else
 				{
