@@ -9,6 +9,8 @@ use Cwd 'abs_path';
 
 my $conf->{OMIT}->{authorized} = [ qw{ 0 1 } ];
 $conf->{OMIT}->{default} = 0;
+$conf->{TOKEN_AUTH}->{authorized} = '/[a-z0-9]{32}/';
+$conf->{TOKEN_AUTH}->{mandatory} = 1;
 
 sub isSyncable
 {
@@ -94,8 +96,11 @@ sub read_conf
 
 	foreach my $iteParam(keys %$conf)
 	{
-		print STDERR "Setting $iteParam to default value\n";
-		$conf->{$iteParam}->{value} = $conf->{$iteParam}->{default};
+		if(!$conf->{$iteParam}->{mandatory})
+		{
+			$conf->{$iteParam}->{value} = $conf->{$iteParam}->{default};
+			print STDERR "Setting $iteParam to default value\n";
+		}
 	}
 
 	# Setting default parameters
