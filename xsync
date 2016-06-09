@@ -103,28 +103,27 @@ sub read_conf
 	while(my $line = <$fh>)
 	{
 		chomp $line;
-		if(my ($param, $data) = $line =~ /(.*) (.*)/)
-		{
-			if(defined($conf->{$param}))
-			{
-				if($data ~~ $conf->{$param}->authorized)
-				{
-					$conf->{$param} = $data;
-				}
-				else
-				{
-					print STDERR "The value $data is not allowed for $param\n";
-				}
-			}
-			else
-			{
-				print STDERR "Parameter $param not recognized\n";
-			}
-		}
-		else
+
+		my ($param, $data) = $line =~ /(.*) (.*)/;
+		if(!($param and $data))
 		{
 			print STDERR "Malformed line $i\n";
+			next;
 		}
+
+		if(defined($conf->{$param}))
+		{
+			print STDERR "Parameter $param not recognized\n";
+			next;
+		}
+
+		if($data ~~ $conf->{$param}->authorized)
+		{
+			print STDERR "The value $data is not allowed for $param\n";
+			next;
+		}
+
+		$conf->{$param} = $data;
 	}
 }
 
