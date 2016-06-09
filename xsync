@@ -7,8 +7,8 @@ use FileHandle;
 use Digest::MD5;
 use Cwd 'abs_path';
 
-my $conf->{CONF_OMITED}->authorized = [ qw{ 0 1 } ];
-$conf->{CONF_OMITED}->default = 0;
+my $conf->{OMIT}->{authorized} = [ qw{ 0 1 } ];
+$conf->{OMIT}->{default} = 0;
 
 sub isSyncable
 {
@@ -69,7 +69,7 @@ sub process_files
 			{
 				print "ANALYZING\t".$_."\t".getMD5($_)."\n"
 			}
-			elsif ($conf->{OMMIT}->value and !isSyncable($_))
+			elsif ($conf->{OMIT}->value and !isSyncable($_))
 			{
 				print "OMMITED\t$_\n";
 			}
@@ -92,10 +92,10 @@ sub read_conf
 		die();
 	}
 
-	foreach my $iteParam keys $conf
+	foreach my $iteParam(keys %$conf)
 	{
 		print STDERR "Setting $iteParam to default value\n";
-		$conf->{$iteParam}->value = $conf->{$iteParam}->default;
+		$conf->{$iteParam}->{value} = $conf->{$iteParam}->{default};
 	}
 
 	# Setting default parameters
