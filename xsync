@@ -15,7 +15,7 @@ $conf->{TOKEN_AUTH}->{mandatory} = 1;
 sub isSyncable
 {
 	my ($item) = @_;
-	my @omitted = qw(.git);
+	my @omitted = qw(\.xsync);
 
 	foreach my $omittedItem(@omitted)
 	{
@@ -67,11 +67,11 @@ sub process_files
 		else
 		{
 			# Now checking if we want to scan this file
-			if (isSyncable($_))
+			if ((!$conf->{OMIT}->{value}) and isSyncable($_))
 			{
 				print "ANALYZING\t".$_."\t".getMD5($_)."\n"
 			}
-			elsif ($conf->{OMIT}->value and !isSyncable($_))
+			else
 			{
 				print "OMMITED\t$_\n";
 			}
@@ -122,7 +122,7 @@ sub read_conf
 			next;
 		}
 
-		if($data ~~ $conf->{$param}->authorized)
+		if($data ~~ $conf->{$param}->{authorized})
 		{
 			print STDERR "The value $data is not allowed for $param\n";
 			next;
