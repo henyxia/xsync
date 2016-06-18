@@ -7,8 +7,10 @@ use FileHandle;
 use Digest::MD5;
 use Cwd 'abs_path';
 
-my $conf->{OMIT}->{authorized} = [ qw{ 0 1 } ];
-$conf->{OMIT}->{default} = 0;
+my $conf->{IGNORED_INCLUDED}->{authorized} = [ qw{ 0 1 } ];
+$conf->{IGNORED_INCLUDED}->{default} = 0;
+$conf->{TOKEN_REPO}->{authorized} = '/[a-z0-9]{32}/';
+$conf->{TOKEN_REPO}->{mandatory} = 1;
 $conf->{TOKEN_AUTH}->{authorized} = '/[a-z0-9]{32}/';
 $conf->{TOKEN_AUTH}->{mandatory} = 1;
 
@@ -86,7 +88,7 @@ sub read_conf
 	print "Reading conf for folder $folder\n";
 
 	my $fh;
-	my $i = 1;
+	my $i = 0;
 	if(!open($fh, '<', $folder.'/.xsync'))
 	{
 		print STDERR "Uanble to read your configuration file\n";
@@ -107,16 +109,17 @@ sub read_conf
 
 	while(my $line = <$fh>)
 	{
+		$i++;
 		chomp $line;
 
-		my ($param, $data) = $line =~ /(.*) (.*)/;
+		my ($param, $data) = $line =~ /(\w*)[\ \t]+(.*)/;
 		if(!($param and $data))
 		{
 			print STDERR "Malformed line $i\n";
 			next;
 		}
 
-		if(defined($conf->{$param}))
+		if(!defined($conf->{$param}->{authorized}))
 		{
 			print STDERR "Parameter $param not recognized\n";
 			next;
@@ -128,7 +131,15 @@ sub read_conf
 			next;
 		}
 
-		$conf->{$param} = $data;
+		$conf->{$param}->{value} = $data;
+	}
+
+	foreach my $iteParam(keys %$conf)
+	{
+		if($conf->{$iteParam}->{mandatory} and !$conf->{$iteParam}->{value})
+		{
+			die "Cannot perform sync without parameter: $iteParam\n";
+		}
 	}
 }
 
