@@ -7,7 +7,7 @@ use FileHandle;
 use Digest::MD5;
 use Cwd 'abs_path';
 
-my $conf->{IGNORED_INCLUDED}->{authorized} = [ qw{ 0 1 } ];
+my $conf->{IGNORED_INCLUDED}->{authorized} = '/\b[0-1]{1}\b/';
 $conf->{IGNORED_INCLUDED}->{default} = 0;
 $conf->{TOKEN_REPO}->{authorized} = '/[a-z0-9]{32}/';
 $conf->{TOKEN_REPO}->{mandatory} = 1;
@@ -125,10 +125,16 @@ sub read_conf
 			next;
 		}
 
-		if($data ~~ $conf->{$param}->{authorized})
+		my $pattern = quotemeta $conf->{$param}->{authorized};
+		if($data =~ $pattern)
 		{
 			print STDERR "The value $data is not allowed for $param\n";
 			next;
+		}
+		else
+		{
+			print STDERR "The regex ".$conf->{$param}->{authorized};
+			print STDERR " matched the data ".$data."\n";
 		}
 
 		$conf->{$param}->{value} = $data;
