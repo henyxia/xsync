@@ -7,11 +7,11 @@ use FileHandle;
 use Digest::MD5;
 use Cwd 'abs_path';
 
-my $conf->{IGNORED_INCLUDED}->{authorized} = '/\b[0-1]{1}\b/';
+my $conf->{IGNORED_INCLUDED}->{authorized} = qr/^[0-1]{1}$/;
 $conf->{IGNORED_INCLUDED}->{default} = 0;
-$conf->{TOKEN_REPO}->{authorized} = '/[a-z0-9]{32}/';
+$conf->{TOKEN_REPO}->{authorized} = qr/^[a-z0-9]{32}$/;
 $conf->{TOKEN_REPO}->{mandatory} = 1;
-$conf->{TOKEN_AUTH}->{authorized} = '/[a-z0-9]{32}/';
+$conf->{TOKEN_AUTH}->{authorized} = qr/^[a-z0-9]{32}$/;
 $conf->{TOKEN_AUTH}->{mandatory} = 1;
 
 sub isSyncable
@@ -85,7 +85,7 @@ sub read_conf
 {
 	my $folder = shift;
 
-	print "Reading conf for folder $folder\n";
+	print STDERR "Reading conf for folder $folder\n";
 
 	my $fh;
 	my $i = 0;
@@ -125,16 +125,10 @@ sub read_conf
 			next;
 		}
 
-		my $pattern = quotemeta $conf->{$param}->{authorized};
-		if($data =~ $pattern)
+		if(!($data =~ $conf->{$param}->{authorized}))
 		{
 			print STDERR "The value $data is not allowed for $param\n";
 			next;
-		}
-		else
-		{
-			print STDERR "The regex ".$conf->{$param}->{authorized};
-			print STDERR " matched the data ".$data."\n";
 		}
 
 		$conf->{$param}->{value} = $data;
@@ -152,7 +146,7 @@ sub read_conf
 my ($currentDir) = @ARGV;
 $currentDir = abs_path($currentDir || '.');
 
-print "Scanning directory $currentDir\n\n";
+print STDERR "Scanning directory $currentDir\n\n";
 
 read_conf($currentDir);
 process_files($currentDir);
